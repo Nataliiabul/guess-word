@@ -1,6 +1,8 @@
 package com.example.guessword.ui.game
 
 import android.os.Bundle
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -46,11 +48,29 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun updateUI(state: GameUIState){
-        println("Слово: ${state.currentWord.text}")
-        println("Перемешанные буквы: ${state.shuffledLetters}")
-        println("Слоты пользователя: ${state.userSlots}")
-        println("Победа: ${state.isWordGuessed}")
-        println("---")
-    }
+        val size = resources.getDimensionPixelSize(R.dimen.tile_size)
 
+        binding.shuffledLetters.removeAllViews()
+        binding.userLetters.removeAllViews()
+
+        for (letter in state.shuffledLetters){
+            val tile = TextView(this, null, 0, R.style.TileLetter)
+            val params = LinearLayout.LayoutParams(size, size)
+            params.setMargins(8, 0, 8, 0)
+            tile.layoutParams = params
+            tile.text = letter.toString()
+            binding.shuffledLetters.addView(tile)
+        }
+
+        for (slotValue in state.userSlots) {
+            val slot = TextView(this, null, 0, R.style.TileEmpty)
+            val params = LinearLayout.LayoutParams(size, size)
+            params.setMargins(8, 0, 8, 0)
+            slot.layoutParams = params
+            if (slotValue != null) {
+                slot.text = slotValue.toString()
+            }
+            binding.userLetters.addView(slot)
+        }
+    }
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main tile -->
+    <style name="TileBase">
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/_24ssp</item>
+    </style>
+
+    <!-- Tile with letter -->
+    <style name="TileLetter" parent="TileBase">
+        <item name="android:background">@drawable/main_button_bg</item>
+    </style>
+
+    <!-- Empty tile -->
+    <style name="TileEmpty" parent="TileBase">
+        <item name="android:background">@drawable/empty_button_bg</item>
+        <item name="android:text">""</item>
+    </style>
+</resources>
