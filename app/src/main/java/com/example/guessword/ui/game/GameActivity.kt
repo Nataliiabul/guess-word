@@ -44,6 +44,10 @@ class GameActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnReset.setOnClickListener {
+            viewModel.resetGame()
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -57,44 +61,60 @@ class GameActivity : AppCompatActivity() {
         binding.shuffledLetters.removeAllViews()
         binding.userLetters.removeAllViews()
 
-        for (letter in state.shuffledLetters){
-            val tile = TextView(this, null, 0, R.style.TileLetter)
+        for (slotValue in state.shuffledLetters) {
+            val tile = if (slotValue != null) {
+                TextView(this, null, 0, R.style.TileLetter)
+            } else {
+                TextView(this, null, 0, R.style.TileEmpty)
+            }
             val params = LinearLayout.LayoutParams(size, size)
             params.setMargins(8, 0, 8, 0)
             tile.layoutParams = params
-            tile.text = letter.toString()
 
-            tile.setOnLongClickListener { view ->
-                val letter = tile.text.toString().single()
-                viewModel.onLetterDragStart(letter)
-
-                val data = ClipData.newPlainText("letter", letter.toString())
-                view.startDragAndDrop(data, View.DragShadowBuilder(view), null, 0)
-                true
+            if (slotValue != null) {
+                tile.text = slotValue.toString()
+                tile.setOnLongClickListener { view ->
+                    view.alpha = 0.4f
+                    viewModel.onLetterDragStart(slotValue)
+                    val data = ClipData.newPlainText("letter", slotValue.toString())
+                    view.startDragAndDrop(data, View.DragShadowBuilder(view), null, 0)
+                    true
+                }
+                tile.setOnDragListener { view, event ->
+                    if (event.action == DragEvent.ACTION_DRAG_ENDED) {
+                        view.alpha = 1.0f
+                    }
+                    true
+                }
             }
             binding.shuffledLetters.addView(tile)
         }
 
         for (slotValue in state.userSlots) {
-            val slot = TextView(this, null, 0, R.style.TileEmpty)
+            val slot = if (slotValue != null) {
+                TextView(this, null, 0, R.style.TileLetter)
+            } else {
+                TextView(this, null, 0, R.style.TileEmpty)
+            }
             val params = LinearLayout.LayoutParams(size, size)
             params.setMargins(8, 0, 8, 0)
             slot.layoutParams = params
+
             if (slotValue != null) {
                 slot.text = slotValue.toString()
             }
 
             slot.setOnDragListener { view, event ->
-                when (event.action){
+                when (event.action) {
                     DragEvent.ACTION_DRAG_STARTED -> true
                     DragEvent.ACTION_DROP -> {
-                            val item = event.clipData.getItemAt(0)
-                    val letter = item.text?.singleOrNull()
-                    if (letter != null) {
-                        val index = binding.userLetters.indexOfChild(view)
-                        viewModel.onLetterDrop(index)
-                    }
-                    true
+                        val item = event.clipData.getItemAt(0)
+                        val letter = item.text?.singleOrNull()
+                        if (letter != null) {
+                            val index = binding.userLetters.indexOfChild(view)
+                            viewModel.onLetterDrop(index)
+                        }
+                        true
                     }
                     else -> true
                 }

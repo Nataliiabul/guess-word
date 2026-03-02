@@ -36,24 +36,46 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
         draggedLetter = letter
     }
 
-    fun onLetterDrop(index: Int){
+    fun onLetterDrop(index: Int) {
         if (draggedLetter == null) return
         val currentState = _uiState.value
-        val newUserSlots = currentState.userSlots.toMutableList()
 
-        if (index !in newUserSlots.indices) return
-
-        if (currentState.userSlots[index] != null){
+        if (index !in currentState.userSlots.indices) return
+        if (currentState.userSlots[index] != null) {
             draggedLetter = null
             return
-        } else {
-            newUserSlots[index] = draggedLetter
         }
 
-        var guessed = newUserSlots == currentState.currentWord.letters
+        val sourceIndex = currentState.shuffledLetters.indexOfFirst { it == draggedLetter }
+        if (sourceIndex == -1) {
+            draggedLetter = null
+            return
+        }
+
+        val newShuffled = currentState.shuffledLetters.toMutableList()
+        newShuffled[sourceIndex] = null
+
+        val newUserSlots = currentState.userSlots.toMutableList()
+        newUserSlots[index] = draggedLetter
+
+        val guessed = newUserSlots == currentState.currentWord.letters
+
         _uiState.value = currentState.copy(
+            shuffledLetters = newShuffled,
             userSlots = newUserSlots,
             isWordGuessed = guessed
+        )
+        draggedLetter = null
+    }
+
+    fun resetGame() {
+        val currentState = _uiState.value
+        val word = currentState.currentWord
+
+        _uiState.value = currentState.copy(
+            shuffledLetters = word.letters.shuffled(),
+            userSlots = List(word.letters.size) { null },
+            isWordGuessed = false
         )
         draggedLetter = null
     }

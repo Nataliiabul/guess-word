@@ -4,7 +4,7 @@ import com.example.guessword.data.model.Word
 
 data class GameUIState(
     val currentWord: Word,
-    val shuffledLetters: List<Char>,
+    val shuffledLetters: List<Char?>,
     val userSlots: List<Char?>,
     val isWordGuessed: Boolean,
 )
