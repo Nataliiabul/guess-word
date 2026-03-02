@@ -16,6 +16,7 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
     ))
 
     val uiState: StateFlow<GameUIState> = _uiState.asStateFlow()
+    private var draggedLetter : Char? = null
 
     init {
         loadNewWord()
@@ -29,5 +30,31 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
             List(word.letters.size){null},
             false
         )
+    }
+
+    fun onLetterDragStart(letter: Char){
+        draggedLetter = letter
+    }
+
+    fun onLetterDrop(index: Int){
+        if (draggedLetter == null) return
+        val currentState = _uiState.value
+        val newUserSlots = currentState.userSlots.toMutableList()
+
+        if (index !in newUserSlots.indices) return
+
+        if (currentState.userSlots[index] != null){
+            draggedLetter = null
+            return
+        } else {
+            newUserSlots[index] = draggedLetter
+        }
+
+        var guessed = newUserSlots == currentState.currentWord.letters
+        _uiState.value = currentState.copy(
+            userSlots = newUserSlots,
+            isWordGuessed = guessed
+        )
+        draggedLetter = null
     }
 }

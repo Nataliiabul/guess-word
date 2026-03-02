@@ -1,12 +1,16 @@
 package com.example.guessword.ui.game
 
+import android.content.ClipData
 import android.os.Bundle
+import android.view.DragEvent
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.forEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -59,6 +63,15 @@ class GameActivity : AppCompatActivity() {
             params.setMargins(8, 0, 8, 0)
             tile.layoutParams = params
             tile.text = letter.toString()
+
+            tile.setOnLongClickListener { view ->
+                val letter = tile.text.toString().single()
+                viewModel.onLetterDragStart(letter)
+
+                val data = ClipData.newPlainText("letter", letter.toString())
+                view.startDragAndDrop(data, View.DragShadowBuilder(view), null, 0)
+                true
+            }
             binding.shuffledLetters.addView(tile)
         }
 
@@ -69,6 +82,22 @@ class GameActivity : AppCompatActivity() {
             slot.layoutParams = params
             if (slotValue != null) {
                 slot.text = slotValue.toString()
+            }
+
+            slot.setOnDragListener { view, event ->
+                when (event.action){
+                    DragEvent.ACTION_DRAG_STARTED -> true
+                    DragEvent.ACTION_DROP -> {
+                            val item = event.clipData.getItemAt(0)
+                    val letter = item.text?.singleOrNull()
+                    if (letter != null) {
+                        val index = binding.userLetters.indexOfChild(view)
+                        viewModel.onLetterDrop(index)
+                    }
+                    true
+                    }
+                    else -> true
+                }
             }
             binding.userLetters.addView(slot)
         }
