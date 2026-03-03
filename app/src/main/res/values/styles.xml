@@ -17,4 +17,14 @@
         <item name="android:background">@drawable/empty_button_bg</item>
         <item name="android:text">""</item>
     </style>
+
+    <!-- Correct answer tile -->
+    <style name="TileCorrect" parent="TileBase">
+        <item name="android:background">@drawable/btn_correct</item>
+    </style>
+
+    <!-- Wrong answer tile -->
+    <style name="TileWrong" parent="TileBase">
+        <item name="android:background">@drawable/btn_wrong</item>
+    </style>
 </resources>

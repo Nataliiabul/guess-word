@@ -55,8 +55,10 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUI(state: GameUIState){
+    private fun updateUI(state: GameUIState) {
         val size = resources.getDimensionPixelSize(R.dimen.tile_size)
+        val allSlotsFilled = state.userSlots.all { it != null }
+        val gameFinished = state.isWordGuessed || (allSlotsFilled && !state.isWordGuessed)
 
         binding.shuffledLetters.removeAllViews()
         binding.userLetters.removeAllViews()
@@ -73,28 +75,34 @@ class GameActivity : AppCompatActivity() {
 
             if (slotValue != null) {
                 tile.text = slotValue.toString()
-                tile.setOnLongClickListener { view ->
-                    view.alpha = 0.4f
-                    viewModel.onLetterDragStart(slotValue)
-                    val data = ClipData.newPlainText("letter", slotValue.toString())
-                    view.startDragAndDrop(data, View.DragShadowBuilder(view), null, 0)
-                    true
-                }
-                tile.setOnDragListener { view, event ->
-                    if (event.action == DragEvent.ACTION_DRAG_ENDED) {
-                        view.alpha = 1.0f
+                if (!gameFinished) {
+                    tile.setOnLongClickListener { view ->
+                        view.alpha = 0.4f
+                        viewModel.onLetterDragStart(slotValue)
+                        val data = ClipData.newPlainText("letter", slotValue.toString())
+                        view.startDragAndDrop(data, View.DragShadowBuilder(view), null, 0)
+                        true
                     }
-                    true
+                    tile.setOnDragListener { view, event ->
+                        if (event.action == DragEvent.ACTION_DRAG_ENDED) {
+                            view.alpha = 1.0f
+                        }
+                        true
+                    }
                 }
             }
             binding.shuffledLetters.addView(tile)
         }
 
         for (slotValue in state.userSlots) {
-            val slot = if (slotValue != null) {
-                TextView(this, null, 0, R.style.TileLetter)
-            } else {
-                TextView(this, null, 0, R.style.TileEmpty)
+            val slot = when {
+                state.isWordGuessed -> TextView(this, null, 0, R.style.TileCorrect)
+                allSlotsFilled && !state.isWordGuessed -> TextView(this, null, 0, R.style.TileWrong)
+                else -> if (slotValue != null) {
+                    TextView(this, null, 0, R.style.TileLetter)
+                } else {
+                    TextView(this, null, 0, R.style.TileEmpty)
+                }
             }
             val params = LinearLayout.LayoutParams(size, size)
             params.setMargins(8, 0, 8, 0)
@@ -104,19 +112,36 @@ class GameActivity : AppCompatActivity() {
                 slot.text = slotValue.toString()
             }
 
-            slot.setOnDragListener { view, event ->
-                when (event.action) {
-                    DragEvent.ACTION_DRAG_STARTED -> true
-                    DragEvent.ACTION_DROP -> {
-                        val item = event.clipData.getItemAt(0)
-                        val letter = item.text?.singleOrNull()
-                        if (letter != null) {
-                            val index = binding.userLetters.indexOfChild(view)
-                            viewModel.onLetterDrop(index)
+            if (!gameFinished) {
+                slot.setOnDragListener { view, event ->
+                    when (event.action) {
+                        DragEvent.ACTION_DRAG_STARTED -> {
+                            (view as? TextView)?.text?.isEmpty() ?: true
                         }
-                        true
+                        DragEvent.ACTION_DRAG_ENTERED -> {
+                            view.setBackgroundResource(R.drawable.btn_highlighted)
+                            true
+                        }
+                        DragEvent.ACTION_DRAG_EXITED -> {
+                            view.setBackgroundResource(R.drawable.empty_button_bg)
+                            true
+                        }
+                        DragEvent.ACTION_DROP -> {
+                            val item = event.clipData.getItemAt(0)
+                            val letter = item.text?.singleOrNull()
+                            if (letter != null) {
+                                val index = binding.userLetters.indexOfChild(view)
+                                viewModel.onLetterDrop(index)
+                            }
+                            view.setBackgroundResource(R.drawable.empty_button_bg)
+                            true
+                        }
+                        DragEvent.ACTION_DRAG_ENDED -> {
+                            view.setBackgroundResource(R.drawable.empty_button_bg)
+                            true
+                        }
+                        else -> true
                     }
-                    else -> true
                 }
             }
             binding.userLetters.addView(slot)

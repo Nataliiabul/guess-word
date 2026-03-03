@@ -8,4 +8,6 @@
     <color name="dark_primary">#BC4A78</color>
     <color name="accent">#EDE986</color>
     <color name="accent_light">#F2F1D4</color>
+    <color name="correct">#41c43b</color>
+    <color name="wrong">#d13337</color>
 </resources>
