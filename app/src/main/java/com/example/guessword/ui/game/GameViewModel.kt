@@ -22,6 +22,7 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
         loadNewWord()
     }
 
+    // Загрузка нового слова
     fun loadNewWord() {
         val word = repository.getRandomWord()
         _uiState.value = GameUIState(
@@ -32,15 +33,19 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
         )
     }
 
+    // Перетаскиваемая буква
     fun onLetterDragStart(letter: Char){
         draggedLetter = letter
     }
 
+    // Сброс перетаскиваемой буквы в указанный слот
     fun onLetterDrop(index: Int) {
         if (draggedLetter == null) return
         val currentState = _uiState.value
 
         if (index !in currentState.userSlots.indices) return
+
+        // Не занят ли уже этот слот другой буквой
         if (currentState.userSlots[index] != null) {
             draggedLetter = null
             return
@@ -52,12 +57,15 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
             return
         }
 
+        // Удаляем с верхнего ряда перетаскиваемую букву
         val newShuffled = currentState.shuffledLetters.toMutableList()
         newShuffled[sourceIndex] = null
 
+        // Добавляем в нижний ряд букву
         val newUserSlots = currentState.userSlots.toMutableList()
         newUserSlots[index] = draggedLetter
 
+        // Проверяем, не собрано ли всё слово правильно
         val guessed = newUserSlots == currentState.currentWord.letters
 
         _uiState.value = currentState.copy(
@@ -68,6 +76,7 @@ class GameViewModel(private val repository: WordRepository): ViewModel() {
         draggedLetter = null
     }
 
+    // Сброс состояния игры до начального
     fun resetGame() {
         val currentState = _uiState.value
         val word = currentState.currentWord

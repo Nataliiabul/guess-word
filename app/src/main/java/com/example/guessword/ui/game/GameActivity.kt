@@ -38,12 +38,14 @@ class GameActivity : AppCompatActivity() {
             }
         ).get(GameViewModel::class.java)
 
+        // Подписка на изменения состояния игры
         lifecycleScope.launch{
             viewModel.uiState.collect {
                     state -> updateUI(state)
             }
         }
 
+        // Кнопка сброса текущего состояния до начального
         binding.btnReset.setOnClickListener {
             viewModel.resetGame()
         }
@@ -55,6 +57,7 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    // Обновление интерфейса на основе текущего состояния игры
     private fun updateUI(state: GameUIState) {
         val size = resources.getDimensionPixelSize(R.dimen.tile_size)
         val allSlotsFilled = state.userSlots.all { it != null }
@@ -63,6 +66,7 @@ class GameActivity : AppCompatActivity() {
         binding.shuffledLetters.removeAllViews()
         binding.userLetters.removeAllViews()
 
+        // Отрисовка верхнего ряда (перемешанные буквы)
         for (slotValue in state.shuffledLetters) {
             val tile = if (slotValue != null) {
                 TextView(this, null, 0, R.style.TileLetter)
@@ -94,13 +98,17 @@ class GameActivity : AppCompatActivity() {
             binding.shuffledLetters.addView(tile)
         }
 
+        // Отрисовка нижнего ряда (слоты пользователя)
         for (slotValue in state.userSlots) {
+            // Выбор стиля в зависимости от исхода игры
             val slot = when {
+                // угадано
                 state.isWordGuessed -> TextView(this, null, 0, R.style.TileCorrect)
+                // ошибка
                 allSlotsFilled && !state.isWordGuessed -> TextView(this, null, 0, R.style.TileWrong)
-                else -> if (slotValue != null) {
+                else -> if (slotValue != null) { // заполненный слот
                     TextView(this, null, 0, R.style.TileLetter)
-                } else {
+                } else { // пустой слот
                     TextView(this, null, 0, R.style.TileEmpty)
                 }
             }
@@ -115,17 +123,21 @@ class GameActivity : AppCompatActivity() {
             if (!gameFinished) {
                 slot.setOnDragListener { view, event ->
                     when (event.action) {
+                        // Разрешаем начало перетаскивания только если слот пустой
                         DragEvent.ACTION_DRAG_STARTED -> {
                             (view as? TextView)?.text?.isEmpty() ?: true
                         }
+                        // При наведении на слот меняем фон
                         DragEvent.ACTION_DRAG_ENTERED -> {
                             view.setBackgroundResource(R.drawable.btn_highlighted)
                             true
                         }
+                        // При уходе сбрасываем фон
                         DragEvent.ACTION_DRAG_EXITED -> {
                             view.setBackgroundResource(R.drawable.empty_button_bg)
                             true
                         }
+                        // Сброс буквы в слот
                         DragEvent.ACTION_DROP -> {
                             val item = event.clipData.getItemAt(0)
                             val letter = item.text?.singleOrNull()
@@ -136,6 +148,7 @@ class GameActivity : AppCompatActivity() {
                             view.setBackgroundResource(R.drawable.empty_button_bg)
                             true
                         }
+                        // Сброс фона после окончания перетаскивания
                         DragEvent.ACTION_DRAG_ENDED -> {
                             view.setBackgroundResource(R.drawable.empty_button_bg)
                             true

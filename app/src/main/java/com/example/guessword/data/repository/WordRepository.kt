@@ -7,5 +7,7 @@ class WordRepository {
         Word("forest", listOf('f', 'o', 'r', 'e', 's', 't')),
         Word("cloud", listOf('c', 'l', 'o', 'u', 'd'))
     )
+
+    // Получение рандомного слова
     fun getRandomWord(): Word = words.random()
 }
