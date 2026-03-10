@@ -11,6 +11,6 @@ A Kotlin project made using MVVM architecture, Coroutines & StateFlow, Android D
 
 ### Screenshots:
 <img src="app/src/main/res/screens/screen1.jpg" height="400"></img>
-<img src="app/src/main/res/screens/screen1.jpg" height="400"></img>
-<img src="app/src/main/res/screens/screen1.jpg" height="400"></img>
-<img src="app/src/main/res/screens/screen1.jpg" height="400"></img>
+<img src="app/src/main/res/screens/screen2.jpg" height="400"></img>
+<img src="app/src/main/res/screens/screen3.jpg" height="400"></img>
+<img src="app/src/main/res/screens/screen4.jpg" height="400"></img>
